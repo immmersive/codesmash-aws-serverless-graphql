@@ -57,8 +57,11 @@ resource "aws_appsync_resolver" "resolver" {
     "version": "2018-05-29",
     "operation": "Invoke",
     "payload": {
-      "fieldName": "$context.info.fieldName",
-      "arguments": $util.toJson($context.arguments)
+      "operation": "getItem",
+      "arguments": {
+        "tableName": "${var.app_name}_${terraform.workspace}",
+        "key": $util.toJson($context.arguments)
+      }
     }
   }
   EOF
@@ -83,8 +86,11 @@ resource "aws_appsync_resolver" "resolver_mut" {
     "version": "2018-05-29",
     "operation": "Invoke",
     "payload": {
-      "fieldName": "$context.info.fieldName",
-      "arguments": $util.toJson($context.arguments)
+      "operation": "createItem",
+      "arguments": {
+        "tableName": "${var.app_name}_${terraform.workspace}",
+        "item": $util.toJson($context.arguments)
+      }
     }
   }
   EOF
