@@ -1,34 +1,6 @@
 locals {
-  appsync_config = jsondecode(jsonencode({
-    schema = {
-      types = [
-        { name = "University", fields = ["universityId: ID!", "studentId: ID!", "uniName: String!"] },
-        { name = "Query", fields = ["getUniversity(universityId: ID!, studentId: ID!): University"] },
-        { name = "Mutation", fields = ["createUniversity(universityId: ID!, studentId: ID!, uniName: String!): University"] }
-      ]
-    }
-    resolvers = [
-      {
-        type = "Query",
-        field = "getUniversity",
-        datasource = "lambda"
-      },
-      {
-        type = "Mutation",
-        field = "createUniversity",
-        datasource = "lambda"
-      }
-    ]
-    datasources = [
-      {
-        name = "lambda",
-        type = "AWS_LAMBDA"
-      }
-    ]
-  }))
-
   schema_sdl = join("\n\n", [
-    for t in local.appsync_config.schema.types :
+    for t in var.appsync_config.schema.types :
     "type ${t.name} {\n  ${join("\n  ", t.fields)}\n}"
   ])
 
@@ -43,12 +15,11 @@ EOF
 }
 
 
-
 resource "aws_appsync_graphql_api" "appsync" {
   authentication_type = "API_KEY"
   name                = "${var.app_name}-${terraform.workspace}-appsync"
 
-schema = local.schema_sdl_with_root
+  schema = local.schema_sdl_with_root
 }
 
 resource "aws_appsync_api_key" "appsync" {
@@ -69,8 +40,8 @@ resource "aws_appsync_datasource" "lambda" {
 
 resource "aws_appsync_resolver" "query_resolver" {
   api_id      = aws_appsync_graphql_api.appsync.id
-  type        = local.appsync_config.resolvers[0].type
-  field       = local.appsync_config.resolvers[0].field
+  type        = var.appsync_config.resolvers[0].type
+  field       = var.appsync_config.resolvers[0].field
   data_source = aws_appsync_datasource.lambda.name
 
   request_template = <<EOF
@@ -99,8 +70,8 @@ EOF
 
 resource "aws_appsync_resolver" "mutation_resolver" {
   api_id      = aws_appsync_graphql_api.appsync.id
-  type        = local.appsync_config.resolvers[1].type
-  field       = local.appsync_config.resolvers[1].field
+  type        = var.appsync_config.resolvers[1].type
+  field       = var.appsync_config.resolvers[1].field
   data_source = aws_appsync_datasource.lambda.name
 
   request_template = <<EOF
