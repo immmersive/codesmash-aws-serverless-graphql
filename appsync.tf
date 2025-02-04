@@ -1,33 +1,25 @@
+locals {
+  schema_sdl = join("\n\n", [
+    for t in var.appsync_config.schema.types :
+    "type ${t.name} {\n  ${join("\n  ", t.fields)}\n}"
+  ])
+
+  schema_sdl_with_root = <<EOF
+${local.schema_sdl}
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+EOF
+}
+
+
 resource "aws_appsync_graphql_api" "appsync" {
   authentication_type = "API_KEY"
-  name                = "${var.app_name}_${terraform.workspace}_appsync"
+  name                = "${var.app_name}-${terraform.workspace}-appsync"
 
-  schema = <<EOF
-    type University {
-      universityId: ID!
-      studentId: ID!
-      uniName: String!
-    }
-
-    type Query {
-      getUniversity(universityId: ID!, studentId: ID!): University
-    }
-
-    type Mutation {
-      createUniversity(universityId: ID!, studentId: ID!, uniName: String!): University
-    }
-
-    type Subscription {
-      addedUni: University
-        @aws_subscribe(mutations: ["createUniversity"])
-    }
-
-    schema {
-        query: Query
-        mutation: Mutation
-        subscription: Subscription
-    }
-  EOF
+  schema = local.schema_sdl_with_root
 }
 
 resource "aws_appsync_api_key" "appsync" {
@@ -38,68 +30,69 @@ resource "aws_appsync_api_key" "appsync" {
 resource "aws_appsync_datasource" "lambda" {
   api_id           = aws_appsync_graphql_api.appsync.id
   name             = "${var.app_name}_${terraform.workspace}_resolver"
-  service_role_arn = aws_iam_role.role.arn
   type             = "AWS_LAMBDA"
+  service_role_arn = aws_iam_role.role.arn
 
   lambda_config {
     function_arn = aws_lambda_function.lambda.arn
   }
 }
 
-resource "aws_appsync_resolver" "resolver" {
+resource "aws_appsync_resolver" "query_resolver" {
   api_id      = aws_appsync_graphql_api.appsync.id
-  type        = "Query"
-  field       = "getUniversity"
+  type        = var.appsync_config.resolvers[0].type
+  field       = var.appsync_config.resolvers[0].field
   data_source = aws_appsync_datasource.lambda.name
 
   request_template = <<EOF
-  {
-    "version": "2018-05-29",
-    "operation": "Invoke",
-    "payload": {
-      "operation": "getItem",
-      "arguments": {
-        "tableName": "${var.app_name}_${terraform.workspace}",
-        "key": $util.toJson($context.arguments)
-      }
+{
+  "version": "2018-05-29",
+  "operation": "Invoke",
+  "payload": {
+    "operation": "getItem",
+    "arguments": {
+      "tableName": "${var.app_name}_${terraform.workspace}",
+      "key": $util.toJson($context.arguments)
     }
   }
-  EOF
+}
+EOF
 
   response_template = <<EOF
-    #if ($ctx.result)
-      $utils.toJson($ctx.result)
-    #else
-      $utils.appendError("No data received from Lambda", "MappingTemplate")
-    #end
-  EOF
+#if ($ctx.result)
+  $utils.toJson($ctx.result)
+#else
+  $utils.appendError("No data received from Lambda", "MappingTemplate")
+#end
+EOF
+
 }
 
-resource "aws_appsync_resolver" "resolver_mut" {
+resource "aws_appsync_resolver" "mutation_resolver" {
   api_id      = aws_appsync_graphql_api.appsync.id
-  type        = "Mutation"
-  field       = "createUniversity"
+  type        = var.appsync_config.resolvers[1].type
+  field       = var.appsync_config.resolvers[1].field
   data_source = aws_appsync_datasource.lambda.name
 
   request_template = <<EOF
-  {
-    "version": "2018-05-29",
-    "operation": "Invoke",
-    "payload": {
-      "operation": "createItem",
-      "arguments": {
-        "tableName": "${var.app_name}_${terraform.workspace}",
-        "item": $util.toJson($context.arguments)
-      }
+{
+  "version": "2018-05-29",
+  "operation": "Invoke",
+  "payload": {
+    "operation": "createItem",
+    "arguments": {
+      "tableName": "${var.app_name}_${terraform.workspace}",
+      "item": $util.toJson($context.arguments)
     }
   }
-  EOF
+}
+EOF
 
   response_template = <<EOF
-    #if ($ctx.result)
-      $utils.toJson($ctx.result)
-    #else
-      $utils.appendError("No data received from Lambda", "MappingTemplate")
-    #end
-  EOF
+#if ($ctx.result)
+$utils.toJson($ctx.result)
+#else
+$utils.appendError("No data received from Lambda", "MappingTemplate")
+endif
+EOF
 }
