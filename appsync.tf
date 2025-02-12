@@ -1,30 +1,12 @@
-locals {
-  schema_sdl = join("\n\n", [
-    for t in var.appsync_config.schema.types :
-    "type ${t.name} {\n  ${join("\n  ", t.fields)}\n}"
-  ])
-
-  schema_sdl_with_root = <<EOF
-${local.schema_sdl}
-
-schema {
-  query: Query
-  mutation: Mutation
-}
-EOF
-}
-
-
 resource "aws_appsync_graphql_api" "appsync" {
   authentication_type = "API_KEY"
   name                = "${var.app_name}-${terraform.workspace}-appsync"
-
-  schema = local.schema_sdl_with_root
+  schema              = file("./schema.txt")
 }
 
 resource "aws_appsync_api_key" "appsync" {
   api_id  = aws_appsync_graphql_api.appsync.id
-  expires = "2024-12-23T04:00:00Z"
+  expires = timeadd(timestamp(), "8736h")
 }
 
 resource "aws_appsync_datasource" "lambda" {
@@ -38,10 +20,12 @@ resource "aws_appsync_datasource" "lambda" {
   }
 }
 
-resource "aws_appsync_resolver" "query_resolver" {
+resource "aws_appsync_resolver" "resolvers" {
+  for_each = { for r in var.appsync_config.resolvers : "${r.type}_${r.field}_${r.operation}" => r }
+
   api_id      = aws_appsync_graphql_api.appsync.id
-  type        = var.appsync_config.resolvers[0].type
-  field       = var.appsync_config.resolvers[0].field
+  type        = each.value.type
+  field       = each.value.field
   data_source = aws_appsync_datasource.lambda.name
 
   request_template = <<EOF
@@ -49,7 +33,7 @@ resource "aws_appsync_resolver" "query_resolver" {
   "version": "2018-05-29",
   "operation": "Invoke",
   "payload": {
-    "operation": "getItem",
+    "operation": "${each.value.operation}",
     "arguments": {
       "tableName": "${var.app_name}_${terraform.workspace}",
       "key": $util.toJson($context.arguments)
@@ -64,35 +48,5 @@ EOF
 #else
   $utils.appendError("No data received from Lambda", "MappingTemplate")
 #end
-EOF
-
-}
-
-resource "aws_appsync_resolver" "mutation_resolver" {
-  api_id      = aws_appsync_graphql_api.appsync.id
-  type        = var.appsync_config.resolvers[1].type
-  field       = var.appsync_config.resolvers[1].field
-  data_source = aws_appsync_datasource.lambda.name
-
-  request_template = <<EOF
-{
-  "version": "2018-05-29",
-  "operation": "Invoke",
-  "payload": {
-    "operation": "createItem",
-    "arguments": {
-      "tableName": "${var.app_name}_${terraform.workspace}",
-      "item": $util.toJson($context.arguments)
-    }
-  }
-}
-EOF
-
-  response_template = <<EOF
-#if ($ctx.result)
-$utils.toJson($ctx.result)
-#else
-$utils.appendError("No data received from Lambda", "MappingTemplate")
-endif
 EOF
 }

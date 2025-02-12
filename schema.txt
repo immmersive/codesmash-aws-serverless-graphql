@@ -1,0 +1,24 @@
+type University {
+  universityId: ID!
+  studentId: ID!
+  uniName: String!
+}
+
+type Query {
+  getUniversity(universityId: ID!, studentId: ID!): University
+}
+
+type Mutation {
+  createUniversity(universityId: ID!, studentId: ID!, uniName: String!): University
+}
+
+type Subscription {
+  addedUni: University
+    @aws_subscribe(mutations: ["createUniversity"])
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}

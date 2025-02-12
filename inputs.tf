@@ -38,20 +38,18 @@ variable "indexes" {
 
 variable "appsync_config" {
   type = object({
-    schema = object({
-      types = list(object({
-        name   = string
-        fields = list(string)
-      }))
-    })
     resolvers = list(object({
-      type       = string
-      field      = string
-      datasource = string
-    }))
-    datasources = list(object({
-      name = string
-      type = string
+      type        = string
+      field       = string
+      operation   = string
+      datasource  = string
     }))
   })
+
+  default = {
+    resolvers = [
+      { type = "Query", field = "getUniversity", operation = "getItem", datasource = "lambda" },
+      { type = "Mutation", field = "createUniversity", operation = "createItem", datasource = "lambda" }
+    ]
+  }
 }
