@@ -1,4 +1,5 @@
-import { RouteDefinition1 } from "./routes/RouteDefinition1";
+import { MutationDefinition } from "./routes/MutationDefinition";
+import { QueryDefinition } from "./routes/QueryDefinition";
 
 export class ApiDefinition
 {
@@ -18,7 +19,8 @@ export class ApiDefinition
     {
         this.definitions =
         [
-          new RouteDefinition1().definitions
+          new MutationDefinition().definitions,
+          new QueryDefinition().definitions
         ];
     }
 }

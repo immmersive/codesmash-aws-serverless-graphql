@@ -1,10 +1,10 @@
-export class RouteDefinition1 
+export class QueryDefinition
 {
-    definitions: 
+    definitions:
     {
         route: string
         method: string
-        funcInvocations: 
+        funcInvocations:
         {
             funcId: string
             skip: boolean
@@ -14,56 +14,56 @@ export class RouteDefinition1
 
     constructor()
     {
-        this.definitions = 
+        this.definitions =
         {
-			route: '/users',
+			route: '/items',
 			method: 'GET',
-			funcInvocations: 
+			funcInvocations:
 			[
 				{
 					funcId: 'set-value',
 					skip: true,
-					values: 
+					values:
 					{
-						value1: '"/users"',
+						value1: '"/items"',
 						value2: 'fragment',
-					}				
+					}
 				},
 				{
 					funcId: 'set-value',
 					skip: false,
-					values: 
+					values:
 					{
 						value1: '"failure"',
 						value2: 'result',
-					}				
+					}
 				},
 				{
 					funcId: 'return',
 					skip: false,
-					values: 
+					values:
 					{
 						value1: 'result',
-					}				
+					}
 				},
 				{
 					funcId: 'set-value',
 					skip: false,
-					values: 
+					values:
 					{
 						value1: 'fragment.split("/")[1]',
 						value2: 'param',
-					}				
+					}
 				},
 				{
 					funcId: 'query-items',
 					skip: false,
-					values: 
+					values:
 					{
 						value1: '{ "type": param.toString() }',
 						value3: 'type-index',
 						value4: 'result',
-					}				
+					}
 				},
 			],
 		};

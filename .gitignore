@@ -1,2 +1,4 @@
 .terraform/
 .terraform.lock.hcl
+package-lock.json
+node_modules
