@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "module": "CommonJS",
+      "target": "ES2017",
+      "noImplicitAny": true,
+      "preserveConstEnums": true,
+      "outDir": "./build",
+      "sourceMap": false,
+      "types": ["node"],
+      "resolveJsonModule": true,
+        "typeRoots": [
+            "./node_modules/@types"
+          ]
+    },
+    "include": ["src/**/*", "index.js", "global.d.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}
