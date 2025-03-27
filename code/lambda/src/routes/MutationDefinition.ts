@@ -3,7 +3,8 @@ export class MutationDefinition
     definitions:
     {
         route: string
-        method: string
+        type: string
+        filter_value: string
         funcInvocations:
         {
             funcId: string
@@ -17,7 +18,8 @@ export class MutationDefinition
         this.definitions =
         {
 			route: '/items/{id}',
-			method: 'POST',
+			type: 'POST',
+      filter_value: "filtery value",
 			funcInvocations:
 			[
 				{

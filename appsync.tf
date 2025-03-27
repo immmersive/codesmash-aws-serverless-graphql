@@ -34,6 +34,7 @@ resource "aws_appsync_resolver" "resolvers" {
   "operation": "Invoke",
   "payload": {
     "operation": "${each.value.operation}",
+    "type": "${each.value.type}",
     "arguments": {
       "tableName": "${var.app_name}_${terraform.workspace}",
       "key": $util.toJson($context.arguments)

@@ -6,7 +6,8 @@ export class ApiDefinition
     definitions:
     {
         route: string
-        method: string
+        type: string
+        filter_value: string,
         funcInvocations:
         {
             funcId: string

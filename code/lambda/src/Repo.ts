@@ -17,37 +17,38 @@ import { SetValueAction } from "./functions/SetValueAction"
 import { UpdateItemAction } from "./functions/UpdateItemAction"
 import { ReturnAction } from "./functions/ReturnAction"
 import { JoinAction } from "./functions/JoinAction"
- 
+
 export class Repo
-{  
+{
     apiDefinition: ApiDefinition
 
     constructor()
-    { 
+    {
         this.apiDefinition = new ApiDefinition();
     }
 
-    getRoutes(): 
-    { 
+    getRoutes():
+    {
         invokeRoute(queryParameters: any, headers: any, path: any, body: any): Promise<any>
-        isMatching(path: string, httpMethod: string): boolean
+        isMatching(operation: string, type: string): boolean
     }[]
-    {  
-        return this.apiDefinition.definitions.map(x => 
+    {
+        return this.apiDefinition.definitions.map(x =>
             new Route(
-                x.route, 
-                x.method, 
+                x.route,
+                x.type,
+                "filtervaluehere",
                 x.funcInvocations
                     .filter(f => f.skip === false)
                     .map(f => this.functionSelector(f.funcId))));
     }
 
-    functionSelector(funcId: string): 
+    functionSelector(funcId: string):
     {
         id: string,
         run(data: any, source: any, other: any): Promise<boolean>
     }
-    {  
+    {
         return [
             new ContainsAction(),
             new DeleteItemAction(),
@@ -66,6 +67,6 @@ export class Repo
             new UpdateItemAction(),
             new ReturnAction(),
             new JoinAction()
-        ].filter(x => x.id === funcId)[0];
+        ].filter(x => x.id === funcId)[0];
     }
 }
