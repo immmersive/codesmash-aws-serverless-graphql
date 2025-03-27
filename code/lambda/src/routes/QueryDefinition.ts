@@ -2,9 +2,8 @@ export class QueryDefinition
 {
     definitions:
     {
-        route: string
+        operation: string
         type: string
-        filter_value: string
         funcInvocations:
         {
             funcId: string
@@ -17,9 +16,8 @@ export class QueryDefinition
     {
         this.definitions =
         {
-			route: '/items',
+      operation: '/items',
 			type: 'GET',
-      filter_value: "filtery value",
 			funcInvocations:
 			[
 				{

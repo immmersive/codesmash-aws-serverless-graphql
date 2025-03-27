@@ -3,7 +3,7 @@ import { HelpApi } from "./HelpApi";
 
 export class Route
 {
-    route: string
+    operation: string
     type: string
     data: any = {}
     filter_value: string
@@ -14,16 +14,16 @@ export class Route
     }[]
 
     constructor(
-        route: string,
+        operation: string,
         type: string,
         filter_value: string,
         functions: { id: string, run(data: any, source: any, other: any): Promise<boolean> }[])
     {
-        this.route = route;
+        this.operation = operation;
         this.type = type;
         this.filter_value = filter_value
         this.functions = functions;
-        this.data['route'] = route;
+        this.data['operation'] = operation;
         this.data['type'] = type;
     }
 
@@ -41,7 +41,7 @@ export class Route
         var partitionKeyType = table.AttributeDefinitions.filter(x => x.AttributeName === partitionKeyName)[0].AttributeType;
         var sortKeyName = tempSort.length > 0 ? tempSort[0].AttributeName : null;
         var sortKeyType = tempSort.length > 0 ? table.AttributeDefinitions.filter(x => x.AttributeName === tempSort[0].AttributeName)[0].AttributeType : undefined;
-        var funcInvocations = new ApiDefinition().definitions.filter(d => d.route === this.route && d.type === this.type)[0].funcInvocations;
+        var funcInvocations = new ApiDefinition().definitions.filter(d => d.operation === this.operation && d.type === this.type)[0].funcInvocations;
 
         await help.executeSequentially(this.functions.map((x, i) => () => help.promisify(
             x,
@@ -57,10 +57,7 @@ export class Route
         return this.data;
     }
 
-    isMatching(operation: string, type: string): boolean
-    {
-        var filter_concat = `${operation}#${type}`
-
-        return filter_concat === this.filter_value;
+    isMatching(operation: string, type: string): boolean {
+      return `${type}#${operation}` === this.filter_value;
     }
 }

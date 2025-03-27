@@ -35,7 +35,7 @@ export class Repo
     {
         return this.apiDefinition.definitions.map(x =>
             new Route(
-                x.route,
+                x.operation,
                 x.type,
                 "filtervaluehere",
                 x.funcInvocations
