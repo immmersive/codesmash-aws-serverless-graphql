@@ -4,17 +4,12 @@ export const handler = async (event: {
     operation: string
     type: string
     arguments: any
-    path: string
-    httpMethod: string
-    queryStringParameters: any
-    headers: any
-    body: any
 }): Promise<any> => {
   console.log("Received event:", JSON.stringify(event));
 
   try {
     var selectedRoute: {
-      invokeRoute(queryParameters: any, headers: any, path: any, body: any): Promise<any>
+      invokeRoute(operation: string, type: string): Promise<any>
       isMatching(operation: string, type: string): boolean
     } = new Repo()
             .getRoutes()
@@ -37,7 +32,7 @@ export const handler = async (event: {
       };
     }
 
-    var temp = await selectedRoute.invokeRoute(event.queryStringParameters, event.headers, event.path, event.body);
+    var temp = await selectedRoute.invokeRoute(event.operation, event.type);
 
     return {
         statusCode: 200,

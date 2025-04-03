@@ -4,13 +4,14 @@ exports.Route = void 0;
 const ApiDefinition_1 = require("./ApiDefinition");
 const HelpApi_1 = require("./HelpApi");
 class Route {
-    constructor(route, method, functions) {
+    constructor(operation, type, filter_value, functions) {
         this.data = {};
-        this.route = route;
-        this.method = method;
+        this.operation = operation;
+        this.type = type;
+        this.filter_value = filter_value;
         this.functions = functions;
-        this.data['route'] = route;
-        this.data['method'] = method;
+        this.data['operation'] = operation;
+        this.data['type'] = type;
     }
     async invokeRoute(queryParameters, headers, path, body) {
         this.data['parameters'] = queryParameters;
@@ -24,7 +25,7 @@ class Route {
         var partitionKeyType = table.AttributeDefinitions.filter(x => x.AttributeName === partitionKeyName)[0].AttributeType;
         var sortKeyName = tempSort.length > 0 ? tempSort[0].AttributeName : null;
         var sortKeyType = tempSort.length > 0 ? table.AttributeDefinitions.filter(x => x.AttributeName === tempSort[0].AttributeName)[0].AttributeType : undefined;
-        var funcInvocations = new ApiDefinition_1.ApiDefinition().definitions.filter(d => d.route === this.route && d.method === this.method)[0].funcInvocations;
+        var funcInvocations = new ApiDefinition_1.ApiDefinition().definitions.filter(d => d.operation === this.operation && d.type === this.type)[0].funcInvocations;
         await help.executeSequentially(this.functions.map((x, i) => () => help.promisify(x, this.data, funcInvocations.filter(f => f.skip === false)[i].values, {
             partitionKey: partitionKeyName,
             partitionKeyType: partitionKeyType,
@@ -33,23 +34,8 @@ class Route {
         })));
         return this.data;
     }
-    isMatching(path, httpMethod) {
-        var help = new HelpApi_1.HelpApi();
-        var parts = help.splitRoute(this.route);
-        var regex = null;
-        if (parts.length === 1) {
-            regex = help.createRegexPattern(parts[0]);
-        }
-        else if (parts.length === 2) {
-            regex = help.createRegexPattern2p(parts[0]);
-        }
-        else if (parts.length === 3) {
-            regex = help.createRegexPattern3p(parts[0], parts[2]);
-        }
-        else {
-            return false;
-        }
-        return regex.test(path) === true && httpMethod === this.method;
+    isMatching(operation, type) {
+        return `${type}#${operation}` === this.filter_value;
     }
 }
 exports.Route = Route;

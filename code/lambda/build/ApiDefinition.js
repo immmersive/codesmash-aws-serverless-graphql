@@ -5,11 +5,13 @@ const MutationDefinition_1 = require("./routes/MutationDefinition");
 const QueryDefinition_1 = require("./routes/QueryDefinition");
 class ApiDefinition {
     constructor() {
-        this.definitions =
-            [
-                new MutationDefinition_1.MutationDefinition().definitions,
-                new QueryDefinition_1.QueryDefinition().definitions
-            ];
+        const mutationDefinitions = new MutationDefinition_1.MutationDefinition().definitions;
+        const queryDefinitions = new QueryDefinition_1.QueryDefinition().definitions;
+        // Wrap single objects in arrays and add `filter_value`
+        this.definitions = [
+            Object.assign(Object.assign({}, mutationDefinitions), { filter_value: `${mutationDefinitions.type}#${mutationDefinitions.operation}` }),
+            Object.assign(Object.assign({}, queryDefinitions), { filter_value: `${queryDefinitions.type}#${queryDefinitions.operation}` }),
+        ];
     }
 }
 exports.ApiDefinition = ApiDefinition;

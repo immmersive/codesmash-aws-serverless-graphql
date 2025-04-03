@@ -16,8 +16,8 @@ export class MutationDefinition
     {
         this.definitions =
         {
-			operation: '/items/{id}',
-			type: 'POST',
+			operation: 'createItem',
+			type: 'Mutation',
 			funcInvocations:
 			[
 				{

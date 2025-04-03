@@ -5,8 +5,8 @@ class QueryDefinition {
     constructor() {
         this.definitions =
             {
-                route: '/items',
-                method: 'GET',
+                operation: '/items',
+                type: 'GET',
                 funcInvocations: [
                     {
                         funcId: 'set-value',

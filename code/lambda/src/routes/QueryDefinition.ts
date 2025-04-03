@@ -16,8 +16,8 @@ export class QueryDefinition
     {
         this.definitions =
         {
-      operation: '/items',
-			type: 'GET',
+      operation: 'getItem',
+			type: 'Query',
 			funcInvocations:
 			[
 				{

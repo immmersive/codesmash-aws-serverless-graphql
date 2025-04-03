@@ -5,8 +5,8 @@ export class Route
 {
     operation: string
     type: string
-    data: any = {}
     filter_value: string
+    data: any = {}
     functions:
     {
         id: string
@@ -27,12 +27,10 @@ export class Route
         this.data['type'] = type;
     }
 
-    async invokeRoute(queryParameters: any, headers: any, path: any, body: any) : Promise<any>
+    async invokeRoute(operation: string, type: string) : Promise<any>
     {
-        this.data['parameters'] = queryParameters;
-        this.data['headers'] = headers;
-        this.data['fragment'] = path;
-        this.data['body'] = body;
+        this.data['operation'] = operation;
+        this.data['type'] = type;
 
         var help = new HelpApi();
         var table = await help.describeTable();

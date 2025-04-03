@@ -5,8 +5,8 @@ class MutationDefinition {
     constructor() {
         this.definitions =
             {
-                route: '/items/{id}',
-                method: 'POST',
+                operation: '/items/{id}',
+                type: 'POST',
                 funcInvocations: [
                     {
                         funcId: 'set-value',
