@@ -10,14 +10,11 @@ class Route {
         this.type = type;
         this.filter_value = filter_value;
         this.functions = functions;
+    }
+    async invokeRoute(operation, type, routeArgs) {
         this.data['operation'] = operation;
         this.data['type'] = type;
-    }
-    async invokeRoute(queryParameters, headers, path, body) {
-        this.data['parameters'] = queryParameters;
-        this.data['headers'] = headers;
-        this.data['fragment'] = path;
-        this.data['body'] = body;
+        this.data['arguments'] = routeArgs;
         var help = new HelpApi_1.HelpApi();
         var table = await help.describeTable();
         var tempSort = table.KeySchema.filter(x => x.KeyType === 'RANGE');
@@ -26,6 +23,7 @@ class Route {
         var sortKeyName = tempSort.length > 0 ? tempSort[0].AttributeName : null;
         var sortKeyType = tempSort.length > 0 ? table.AttributeDefinitions.filter(x => x.AttributeName === tempSort[0].AttributeName)[0].AttributeType : undefined;
         var funcInvocations = new ApiDefinition_1.ApiDefinition().definitions.filter(d => d.operation === this.operation && d.type === this.type)[0].funcInvocations;
+        console.log("🧭 Invocation steps:", funcInvocations.map(f => f.funcId));
         await help.executeSequentially(this.functions.map((x, i) => () => help.promisify(x, this.data, funcInvocations.filter(f => f.skip === false)[i].values, {
             partitionKey: partitionKeyName,
             partitionKeyType: partitionKeyType,

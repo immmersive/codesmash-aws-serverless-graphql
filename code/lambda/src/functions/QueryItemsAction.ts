@@ -1,51 +1,62 @@
 import { HelpApi } from "../HelpApi";
 
-export class QueryItemsAction
-{
-    id = 'query-items'
+function objectFromEntries(entries: [string, any][]): Record<string, any> {
+  return entries.reduce((obj, [key, value]) => {
+      obj[key] = value;
+      return obj;
+  }, {} as Record<string, any>);
+}
 
-    async run(data: any,
-        source: { value1: any, value2: any, value3: any, value4: any },
-        other: { partitionKey: string, sortKey?: string }) : Promise<boolean>
-    {
-        var help = new HelpApi();
-        var value1 = source.value1;
-        var value3 = source.value3;
-        var value4 = source.value4;
-        var toSet = null as any;
+export class QueryItemsAction {
+    id = 'query-items';
 
-        toSet = new Function('data', 'return ' + help.prefixVars(data, value1))(data);
+    async run(data: any, source: { value1: any, value3: any, value4: any }): Promise<boolean> {
+        console.log("➡️ Inside QueryItemsAction.run()");
+        console.log("🔍 Input data:", { data, source });
 
-        if(!toSet)
-        {
+        const help = new HelpApi();
+        const key = source.value1; // The key object from `arguments.key`
+        const tableName = source.value3; // The table name
+        const resultVariable = source.value4; // Where to store the result
+
+        if (!key || !tableName) {
+            console.log("⚠️ Missing tableName or key");
             return false;
         }
 
-        var keyConditionExpression = Object
-            .keys(toSet)
-            .map(x => '#' + x + ' = ' + ':' + x)
-            .reduce((x, y) => x + ' and ' + y);
+        // Construct DynamoDB expressions
+        const keyConditionExpression = Object.keys(key)
+            .map(field => `#${field} = :${field}`)
+            .join(" and ");
+        const expressionAttributeNames = objectFromEntries(
+            Object.keys(key).map(field => [`#${field}`, field])
+        );
+        const expressionAttributeValues = objectFromEntries(
+            Object.entries(key).map(([field, value]) => [`:${field}`, value])
+        );
 
-        var expressionAttributeNames = {} as any;
-        var expressionAttributeValues = {} as any;
+        console.log("📤 Sending query to DynamoDB:");
+        console.log("Table name:", tableName);
+        console.log("KeyConditionExpression:", keyConditionExpression);
+        console.log("ExpressionAttributeNames:", JSON.stringify(expressionAttributeNames));
+        console.log("ExpressionAttributeValues:", JSON.stringify(expressionAttributeValues));
 
-        Object.keys(toSet).forEach(x => expressionAttributeNames['#' + x] = x);
-        Object.keys(toSet).forEach(x => expressionAttributeValues[':' + x] = toSet[x]);
-
-        var result = await help.query(
-            value3,
+        // Execute query
+        const result = await help.query(
+            tableName,
             keyConditionExpression,
             expressionAttributeNames,
-            expressionAttributeValues);
+            expressionAttributeValues
+        );
 
-        if(result != undefined)
-        {
-            help.setObjectValue(data, value4, result);
+        console.log("🔍 Query result:", JSON.stringify(result, null, 2));
 
+        if (result) {
+            help.setObjectValue(data, resultVariable, result);
+            console.log("✅ Query result stored successfully");
             return true;
-        }
-        else
-        {
+        } else {
+            console.log("⚠️ Query returned no results");
             return false;
         }
     }

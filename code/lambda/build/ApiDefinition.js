@@ -7,7 +7,6 @@ class ApiDefinition {
     constructor() {
         const mutationDefinitions = new MutationDefinition_1.MutationDefinition().definitions;
         const queryDefinitions = new QueryDefinition_1.QueryDefinition().definitions;
-        // Wrap single objects in arrays and add `filter_value`
         this.definitions = [
             Object.assign(Object.assign({}, mutationDefinitions), { filter_value: `${mutationDefinitions.type}#${mutationDefinitions.operation}` }),
             Object.assign(Object.assign({}, queryDefinitions), { filter_value: `${queryDefinitions.type}#${queryDefinitions.operation}` }),

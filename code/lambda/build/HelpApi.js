@@ -149,7 +149,11 @@ class HelpApi {
             return promiseChain.then(result => {
                 if (result === false)
                     return false;
-                return func();
+                console.log(`➡️ Executing function: ${func}`);
+                return func().then(success => {
+                    console.log(`✅ Finished function: ${func}`);
+                    return success;
+                });
             });
         }, Promise.resolve(true));
     }

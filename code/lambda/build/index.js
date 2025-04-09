@@ -23,7 +23,16 @@ const handler = async (event) => {
                 })
             };
         }
-        var temp = await selectedRoute.invokeRoute(event.queryStringParameters, event.headers, event.path, event.body);
+        var temp = await selectedRoute.invokeRoute(event.operation, event.type, event.arguments);
+        console.log("Route response temp:", JSON.stringify(temp));
+        console.log("Derived return key:", temp === null || temp === void 0 ? void 0 : temp['return']);
+        console.log("Payload to return:", JSON.stringify(temp === null || temp === void 0 ? void 0 : temp[temp === null || temp === void 0 ? void 0 : temp['return']]));
+        const resultKey = temp['return'];
+        const resultData = temp[resultKey];
+        if (!resultData || typeof resultData !== 'object') {
+            console.error("Invalid return data:", resultData);
+            throw new Error("Route returned invalid or missing data");
+        }
         return {
             statusCode: 200,
             headers: {

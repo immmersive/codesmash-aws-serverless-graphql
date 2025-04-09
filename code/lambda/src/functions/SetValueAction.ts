@@ -8,6 +8,8 @@ export class SetValueAction
         data: any,
         source: { value1: any, value2: any }) : Promise<boolean>
     {
+        console.log("➡️ Inside SetValueAction.run()");
+        console.log("🔍 Input data:", { data, source });
         var help = new HelpApi();
         var value1 = source.value1;
         var value2 = source.value2;
