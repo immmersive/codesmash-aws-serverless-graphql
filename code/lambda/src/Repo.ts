@@ -1,5 +1,6 @@
 import { ApiDefinition } from "./ApiDefinition"
 import { Route } from "./Route"
+
 import { ContainsAction } from "./functions/ContainsAction"
 import { DeleteItemAction } from "./functions/DeleteItemAction"
 import { DoesntContainAction } from "./functions/DoesntContainAction"
@@ -17,37 +18,33 @@ import { SetValueAction } from "./functions/SetValueAction"
 import { UpdateItemAction } from "./functions/UpdateItemAction"
 import { ReturnAction } from "./functions/ReturnAction"
 import { JoinAction } from "./functions/JoinAction"
- 
+
 export class Repo
-{  
+{
     apiDefinition: ApiDefinition
 
-    constructor()
-    { 
-        this.apiDefinition = new ApiDefinition();
+    constructor() {
+      this.apiDefinition = new ApiDefinition();
     }
 
-    getRoutes(): 
-    { 
-        invokeRoute(queryParameters: any, headers: any, path: any, body: any): Promise<any>
-        isMatching(path: string, httpMethod: string): boolean
-    }[]
-    {  
-        return this.apiDefinition.definitions.map(x => 
-            new Route(
-                x.route, 
-                x.method, 
-                x.funcInvocations
-                    .filter(f => f.skip === false)
-                    .map(f => this.functionSelector(f.funcId))));
+    getRoutes(): {
+      invokeRoute(operation: string, type: string, routeArgs: any): Promise<any>
+      isMatching(operation: string, type: string): boolean
+    }[] {
+      return this.apiDefinition.definitions.map(x =>
+          new Route(
+              x.operation,
+              x.type,
+              x.filter_value,
+              x.funcInvocations
+                  .filter(f => f.skip === false)
+                  .map(f => this.functionSelector(f.funcId))));
     }
 
-    functionSelector(funcId: string): 
-    {
-        id: string,
-        run(data: any, source: any, other: any): Promise<boolean>
-    }
-    {  
+    functionSelector(funcId: string): {
+      id: string,
+      run(data: any, source: any, other: any): Promise<boolean>
+    } {
         return [
             new ContainsAction(),
             new DeleteItemAction(),
@@ -66,6 +63,6 @@ export class Repo
             new UpdateItemAction(),
             new ReturnAction(),
             new JoinAction()
-        ].filter(x => x.id === funcId)[0];
+        ].filter(x => x.id === funcId)[0];
     }
 }

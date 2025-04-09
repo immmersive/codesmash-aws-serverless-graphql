@@ -1,0 +1,40 @@
+version: 0.1
+
+env:
+  variables:
+    bucket: "$bucket"
+    region: "$region"
+    key: "$key"
+    branch: "$branch"
+    app_name: "$app_name"
+    partition_key: "$partition_key"
+    sort_key: "$sort_key"
+    columns: "$columns"
+    indexes: "$indexes"
+
+phases:
+  build:
+    commands:
+
+      - cd code/lambda
+      - npm i
+      - cd src
+      - npm run compile
+      - cp -R ../node_modules ../build
+      - cp ../package.json ../build
+      - cd ../build
+      - ls
+      - zip -r -X lambda_code.zip *
+      - mv lambda_code.zip ../../../
+      - cd ../../..
+
+      - mkdir -p app
+      - cd app
+      - curl -o terraform_1.5.5_linux_arm64.zip https://releases.hashicorp.com/terraform/1.5.5/terraform_1.5.5_linux_arm64.zip
+      - unzip terraform_1.5.5_linux_arm64.zip
+      - chmod 755 terraform
+      - cd ..
+      - printf 'yes' | app/terraform init -backend-config="bucket=$bucket" -backend-config="region=$region" -backend-config="key=$key"
+      - app/terraform workspace list
+      - app/terraform workspace select $branch || app/terraform workspace new $branch
+      - app/terraform apply --auto-approve -var "app_name=$app_name" -var "region=$region" -var "partition_key=$partition_key" -var "sort_key=$sort_key" -var "columns=$columns" -var "indexes=$indexes"

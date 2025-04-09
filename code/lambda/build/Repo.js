@@ -25,7 +25,7 @@ class Repo {
         this.apiDefinition = new ApiDefinition_1.ApiDefinition();
     }
     getRoutes() {
-        return this.apiDefinition.definitions.map(x => new Route_1.Route(x.route, x.method, x.funcInvocations
+        return this.apiDefinition.definitions.map(x => new Route_1.Route(x.operation, x.type, x.filter_value, x.funcInvocations
             .filter(f => f.skip === false)
             .map(f => this.functionSelector(f.funcId))));
     }

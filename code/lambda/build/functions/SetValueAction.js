@@ -7,6 +7,8 @@ class SetValueAction {
         this.id = 'set-value';
     }
     async run(data, source) {
+        console.log("➡️ Inside SetValueAction.run()");
+        console.log("🔍 Input data:", { data, source });
         var help = new HelpApi_1.HelpApi();
         var value1 = source.value1;
         var value2 = source.value2;

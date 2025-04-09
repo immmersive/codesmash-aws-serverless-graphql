@@ -1,111 +1,76 @@
 import { Repo } from "./Repo"
 
-export const handler = async (event:
-{
-    path: string
-    httpMethod: string
-    queryStringParameters: any
-    headers: any
-    body: any
-}): Promise<any> =>
-{
+export const handler = async (event: {
+    operation: string
+    type: string
+    arguments: any
+}): Promise<any> => {
   console.log("Received event:", JSON.stringify(event));
 
-    try
-    {
-        if(event.httpMethod === 'OPTIONS')
-        {
-            return {
-                statusCode: 200,
-                headers:
-                {
-                    'Content-Type': 'application/json',
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Allow-Methods": "*"
-                },
-                body: 'OPTIONS OK'
-            };
-        }
+  try {
+    var selectedRoute: {
+      invokeRoute(operation: string, type: string, routeArgs: any): Promise<any>
+      isMatching(operation: string, type: string): boolean
+    } = new Repo()
+            .getRoutes()
+            .filter(x => x.isMatching(event.operation, event.type))[0];
 
-        const requestBody = JSON.parse(event.body || "{}");
-        const graphQLMethod = requestBody.operationName;
-        const graphQLType = requestBody.query?.split(/\s+/)[0]?.trim();
-
-        console.log(`GraphQL Method: ${graphQLMethod}, Type: ${graphQLType}`);
-
-        if (!graphQLMethod || !graphQLType) {
-          console.error("Invalid GraphQL request");
-          return {
-              statusCode: 400,
-              headers: {
-                  'Content-Type': 'application/json',
-                  "Access-Control-Allow-Origin": "*",
-                  "Access-Control-Allow-Headers": "*",
-                  "Access-Control-Allow-Methods": "*",
-              },
-              body: JSON.stringify({
-                  message: 'Invalid GraphQL request',
-                  code: 'InvalidGraphQLRequest',
-              }),
-          };
-        }
-
-        var selectedRoute:
-        {
-            invokeRoute(queryParameters: any, headers: any, path: any, body: any) : Promise<any>
-            isMatching(path: string, httpMethod: string): boolean
-        } = new Repo()
-                .getRoutes()
-                .filter(x => x.isMatching(event.path, event.httpMethod))[0];
-
-        if(selectedRoute == null)
-        {
-            return {
-                statusCode: 404,
-                headers:
-                {
-                    'Content-Type': 'application/json',
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Allow-Methods": "*"
-                },
-                body: JSON.stringify({
-                    message: 'Invalid Route',
-                    code: 'Invalid Route'
-                })
-            };
-        }
-
-        var temp = await selectedRoute.invokeRoute(event.queryStringParameters, event.headers, event.path, event.body);
-
-        return {
-            statusCode: 200,
-            headers:
-            {
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Methods": "*"
-            },
-            body: JSON.stringify((temp['return'] && temp[temp['return']]) ? temp[temp['return']] : {})
-        };
+    if (selectedRoute == null) {
+      return {
+          statusCode: 404,
+          headers:
+          {
+              'Content-Type': 'application/json',
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Headers": "*",
+              "Access-Control-Allow-Methods": "*"
+          },
+          body: JSON.stringify({
+              message: 'Invalid Route',
+              code: 'Invalid Route'
+          })
+      };
     }
-    catch (error)
-    {
-        return {
-            statusCode: 500,
-            headers:
-            {
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Methods": "*"
-            },
-            body: JSON.stringify({
-                message: error.message ? error.message : 'API Call Failed',
-                code: error.code ? error.code : 'APICallFailed'
-            })
-        };
+
+    var temp = await selectedRoute.invokeRoute(event.operation, event.type, event.arguments);
+
+    console.log("Route response temp:", JSON.stringify(temp));
+    console.log("Derived return key:", temp?.['return']);
+    console.log("Payload to return:", JSON.stringify(temp?.[temp?.['return']]));
+
+    const resultKey = temp['return'];
+    const resultData = temp[resultKey];
+
+    if (!resultData || typeof resultData !== 'object') {
+      console.error("Invalid return data:", resultData);
+      throw new Error("Route returned invalid or missing data");
     }
+
+    return {
+        statusCode: 200,
+        headers:
+        {
+            'Content-Type': 'application/json',
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "*"
+        },
+        body: JSON.stringify((temp['return'] && temp[temp['return']]) ? temp[temp['return']] : {})
+    };
+  }
+  catch (error) {
+    return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Methods": "*"
+        },
+        body: JSON.stringify({
+          message: error.message ? error.message : 'API Call Failed',
+          code: error.code ? error.code : 'APICallFailed'
+        })
+    };
+  }
 }
