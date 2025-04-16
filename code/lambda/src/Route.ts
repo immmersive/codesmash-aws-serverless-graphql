@@ -25,11 +25,12 @@ export class Route
         this.functions = functions;
     }
 
-    async invokeRoute(operation: string, type: string, routeArgs: any) : Promise<any>
+    async invokeRoute(operation: string, type: string, field: string, routeArgs: any) : Promise<any>
     {
         this.data['operation'] = operation;
         this.data['type'] = type;
         this.data['arguments'] = routeArgs;
+        this.data['field'] = field;
 
         var help = new HelpApi();
         var table = await help.describeTable();

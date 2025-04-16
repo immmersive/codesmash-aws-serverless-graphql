@@ -3,13 +3,14 @@ import { Repo } from "./Repo"
 export const handler = async (event: {
     operation: string
     type: string
+    field: string
     arguments: any
 }): Promise<any> => {
   console.log("Received event:", JSON.stringify(event));
 
   try {
     var selectedRoute: {
-      invokeRoute(operation: string, type: string, routeArgs: any): Promise<any>
+      invokeRoute(operation: string, type: string, field: string, routeArgs: any): Promise<any>
       isMatching(operation: string, type: string): boolean
     } = new Repo()
             .getRoutes()
@@ -32,7 +33,7 @@ export const handler = async (event: {
       };
     }
 
-    var temp = await selectedRoute.invokeRoute(event.operation, event.type, event.arguments);
+    var temp = await selectedRoute.invokeRoute(event.operation, event.type, event.field, event.arguments);
 
     console.log("Route response temp:", JSON.stringify(temp));
     console.log("Derived return key:", temp?.['return']);
