@@ -39,7 +39,7 @@ export class QueryDefinition
                   }
               },
               {
-                  funcId: 'query-items',
+                  funcId: 'get-item',
                   skip: false,
                   values:
                   {

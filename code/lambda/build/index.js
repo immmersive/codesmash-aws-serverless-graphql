@@ -23,7 +23,7 @@ const handler = async (event) => {
                 })
             };
         }
-        var temp = await selectedRoute.invokeRoute(event.operation, event.type, event.arguments);
+        var temp = await selectedRoute.invokeRoute(event.operation, event.type, event.field, event.arguments);
         console.log("Route response temp:", JSON.stringify(temp));
         console.log("Derived return key:", temp === null || temp === void 0 ? void 0 : temp['return']);
         console.log("Payload to return:", JSON.stringify(temp === null || temp === void 0 ? void 0 : temp[temp === null || temp === void 0 ? void 0 : temp['return']]));

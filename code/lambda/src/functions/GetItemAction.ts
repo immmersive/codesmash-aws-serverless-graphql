@@ -6,12 +6,12 @@ export class GetItemAction
 
     async run(
         data: any,
-        source: { value1: any, value2: any , value3: any },
+        source: { value1: any, value3: any , value4: any },
         other: { partitionKey: string, sortKey?: string }) : Promise<boolean>
     {
         var help = new HelpApi();
         var value1 = source.value1;
-        var value3 = source.value3;
+        var value4 = source.value4;
         var toSet = null;
 
         toSet = new Function('data', 'return ' + help.prefixVars(data, value1))(data);
@@ -27,10 +27,15 @@ export class GetItemAction
         }
 
         var result = await help.getItem(key);
+        const resultFormatted = {
+          data: {
+              [data.field]: result
+          }
+        };
 
         if(result != undefined)
         {
-            help.setObjectValue(data, value3, result);
+            help.setObjectValue(data, value4, resultFormatted);
 
             return true;
         }
