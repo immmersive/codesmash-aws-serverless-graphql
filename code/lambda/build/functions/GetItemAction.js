@@ -9,7 +9,7 @@ class GetItemAction {
     async run(data, source, other) {
         var help = new HelpApi_1.HelpApi();
         var value1 = source.value1;
-        var value3 = source.value3;
+        var value4 = source.value4;
         var toSet = null;
         toSet = new Function('data', 'return ' + help.prefixVars(data, value1))(data);
         var keys = [other.partitionKey];
@@ -20,8 +20,13 @@ class GetItemAction {
             key[other.sortKey] = toSet[other.sortKey];
         }
         var result = await help.getItem(key);
+        const resultFormatted = {
+            data: {
+                [data.field]: result
+            }
+        };
         if (result != undefined) {
-            help.setObjectValue(data, value3, result);
+            help.setObjectValue(data, value4, resultFormatted);
             return true;
         }
         else {

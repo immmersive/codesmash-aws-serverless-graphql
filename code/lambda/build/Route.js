@@ -11,10 +11,11 @@ class Route {
         this.filter_value = filter_value;
         this.functions = functions;
     }
-    async invokeRoute(operation, type, routeArgs) {
+    async invokeRoute(operation, type, field, routeArgs) {
         this.data['operation'] = operation;
         this.data['type'] = type;
         this.data['arguments'] = routeArgs;
+        this.data['field'] = field;
         var help = new HelpApi_1.HelpApi();
         var table = await help.describeTable();
         var tempSort = table.KeySchema.filter(x => x.KeyType === 'RANGE');

@@ -268,9 +268,8 @@ export class HelpApi
             {
                 if (result === false) return false;
 
-                console.log(`➡️ Executing function: ${func}`);
+                // Executing function from API definitions
                 return func().then(success => {
-                    console.log(`✅ Finished function: ${func}`);
                     return success;
                 });
             });

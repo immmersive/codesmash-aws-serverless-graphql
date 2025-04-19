@@ -28,7 +28,7 @@ export class Repo
     }
 
     getRoutes(): {
-      invokeRoute(operation: string, type: string, routeArgs: any): Promise<any>
+      invokeRoute(operation: string, type: string, field: string, routeArgs: any): Promise<any>
       isMatching(operation: string, type: string): boolean
     }[] {
       return this.apiDefinition.definitions.map(x =>
