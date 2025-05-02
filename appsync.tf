@@ -46,9 +46,10 @@ EOF
 
   response_template = <<EOF
 #if ($ctx.result)
-  $utils.toJson($ctx.result)
+    #set($body = $utils.parseJson($ctx.result.body))
+    $utils.toJson($body)
 #else
-  $utils.appendError("No data received from Lambda", "MappingTemplate")
+    $util.error("No result from Lambda function", "LambdaError")
 #end
 EOF
 }

@@ -27,8 +27,17 @@ class MutationDefinition {
                     funcId: 'insert-item',
                     skip: false,
                     values: {
-                        value1: '{ "pk": key.universityId.toString(), "sk": key.studentId.toString(), "data": arguments }',
+                        value1: 'key',
                         value3: 'result',
+                    }
+                },
+                {
+                    funcId: 'get-item',
+                    skip: false,
+                    values: {
+                        value1: 'key',
+                        value3: 'tableName',
+                        value4: 'result',
                     }
                 },
                 {
