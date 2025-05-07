@@ -27,15 +27,10 @@ export class GetItemAction
         }
 
         var result = await help.getItem(key);
-        const resultFormatted = {
-          data: {
-              [data.field]: result
-          }
-        };
 
         if(result != undefined)
         {
-            help.setObjectValue(data, value4, resultFormatted);
+            help.setObjectValue(data, value4, result);
 
             return true;
         }
